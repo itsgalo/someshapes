@@ -17,12 +17,42 @@ body,
   -ms-user-select: none;
   user-select: none;
   overflow: hidden;
+  cursor: grab;
 }
+
+
 
 body {
   position: fixed;
   overflow: hidden;
   overscroll-behavior-y: none;
-  font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
-  color: black;
+  font-family: 'Arial', monospace, sans-serif;
+  color: white;
+
+}
+
+.nav {
+  position: fixed;
+  z-index: 999;
+  margin: 0px;
+  padding: 0px;
+  width: 100%;
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0);
+}
+.button {
+  margin: 25px auto;
+  padding: 0px;
+  width: 20vh;
+  border-radius: 50px;
+  border: 1px solid white;
+}
+.button:hover {
+  cursor: pointer;
+  color: purple;
+  border: 1px solid purple;
+}
+
+h1 {
+  text-align: center;
 }
