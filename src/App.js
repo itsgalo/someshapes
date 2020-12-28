@@ -4,6 +4,7 @@ import { Physics, usePlane, useBox } from 'use-cannon'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { TextureLoader } from 'three/src/loaders/TextureLoader'
+import { isMobile } from 'react-device-detect'
 import uuid from "short-uuid"
 
 import floorImg from './floor.jpg'
@@ -42,13 +43,38 @@ function Shapes(props) {
   const handleClick = useCallback(e => {
     e.stopPropagation()
     //delta is difference from clicked point
-    //console.log(e.delta)
+    //console.log(pos.current[0] / (e.intersections[0].point.x))
     if (e.delta < 2){
       setItems(items => [...items, uuid.generate()])
     }
   }, [])
   const pos = useRef()
-
+  //render for mobile
+  if (isMobile) {
+    return (
+      <>
+      <group
+      onPointerUp = {handleClick}
+      onPointerMove={e => {
+        e.stopPropagation()
+        pos.current = [e.intersections[0].point.x, e.intersections[0].point.y+5, e.intersections[0].point.z]
+      }}>
+        <mesh>
+          <planeGeometry attach="geometry" args={[50, 50]} />
+          <meshBasicMaterial color='white' transparent opacity={0}/>
+        </mesh>
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.2, 0]}>
+          <planeGeometry attach="geometry" args={[50, 50]} />
+          <meshBasicMaterial color='white' transparent opacity={0}/>
+        </mesh>
+      </group>
+      {items.map((key, index) => (
+        index % 2 === 0 ? (<Orb key={key} position={pos.current} />)
+        : (<Cube key={key} position={pos.current} />)
+        ))}
+      </>
+    )
+  }
   return (
     <>
     <group
@@ -72,6 +98,7 @@ function Shapes(props) {
       ))}
     </>
   )
+
 }
 
 function Cube(props) {
