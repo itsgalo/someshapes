@@ -38,24 +38,27 @@ const CameraControls = () => {
 
 function Shapes(props) {
   const [items, setItems] = useState([])
+  const pos = useRef()
+  const pXY = useRef()
   //const [click, toggle] = useState(true)
   //setTimeout(() => set(items => [...items, uuid.generate()]), 1000)
   const handleClick = useCallback(e => {
     e.stopPropagation()
     //delta is difference from clicked point
     //console.log(pos.current[0] / (e.intersections[0].point.x))
-    if (e.delta < 2){
+    if (Math.floor(e.clientX) === pXY.current){
       setItems(items => [...items, uuid.generate()])
     }
   }, [])
-  const pos = useRef()
   //render for mobile
-  if (isMobile) {
     return (
       <>
       <group
       onPointerDown={e => {
         pos.current = [e.intersections[0].point.x, e.intersections[0].point.y+5, e.intersections[0].point.z]
+        pXY.current = Math.floor(e.clientX);
+      }}
+      onPointerUp={e => {
         handleClick(e)
       }}
       onPointerMove={e => {
@@ -77,31 +80,6 @@ function Shapes(props) {
         ))}
       </>
     )
-  }
-  return (
-    <>
-    <group
-    onClick = {handleClick}
-    onPointerMove={e => {
-      e.stopPropagation()
-      pos.current = [e.intersections[0].point.x, e.intersections[0].point.y+5, e.intersections[0].point.z]
-    }}>
-      <mesh>
-        <planeGeometry attach="geometry" args={[50, 50]} />
-        <meshBasicMaterial color='white' transparent opacity={0}/>
-      </mesh>
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.2, 0]}>
-        <planeGeometry attach="geometry" args={[50, 50]} />
-        <meshBasicMaterial color='white' transparent opacity={0}/>
-      </mesh>
-    </group>
-    {items.map((key, index) => (
-      index % 2 === 0 ? (<Orb key={key} position={pos.current} />)
-      : (<Cube key={key} position={pos.current} />)
-      ))}
-    </>
-  )
-
 }
 
 function Cube(props) {
@@ -247,33 +225,8 @@ export default function App() {
     toggleShow(!show)
   }
   //setTimeout(() => toggle(!show), 1000)
-  if (isMobile) {
-    return (
-    <>
-      <div className='nav'>
-      <p>use desktop for more control</p>
-        <div className='button'>
-          <h1 onPointerDown={clearToys} onPointerUp={clearToys}>RESET</h1>
-        </div>
-      </div>
-      <Canvas
-      shadowMap gl={{ alpha: false }}
-      orthographic camera={{ zoom: 50, position: [0, 20, 50]}}>
-        <color attach="background" args={['purple']} />
-        <hemisphereLight intensity={0.3} />
-        <spotLight position={[10, 30, 30]} angle={0.3} penumbra={1} intensity={1} castShadow />
-        <Physics>
-          <Suspense fallback={null}>
-            {show && <Shapes />}
-            {show && <Cube />}
-          </Suspense>
-          <Plane />
-        </Physics>
-      </Canvas>
-      </>
-    )
-  } else {
-    return (
+
+  return (
   <>
     <div className='nav'>
       <div className='button'>
@@ -297,6 +250,5 @@ export default function App() {
     </Canvas>
     </>
   )
-  }
 
 }
