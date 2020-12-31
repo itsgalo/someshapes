@@ -54,7 +54,10 @@ function Shapes(props) {
     return (
       <>
       <group
-      onPointerUp = {handleClick}
+      onPointerDown={e => {
+        pos.current = [e.intersections[0].point.x, e.intersections[0].point.y+5, e.intersections[0].point.z]
+        handleClick(e)
+      }}
       onPointerMove={e => {
         e.stopPropagation()
         pos.current = [e.intersections[0].point.x, e.intersections[0].point.y+5, e.intersections[0].point.z]
@@ -112,30 +115,56 @@ function Cube(props) {
      ...props
    }))
   const [hovered, setHover] = useState(false)
-  //const [active, setActive] = useState(false)
+  const [active, setActive] = useState(false)
   useFrame(state => {
-    if (hovered === true){
+    if (active === true){
       api.applyForce([0, 10, 0], [-state.mouse.x, -state.mouse.y, 0])
       //console.log(gltf.nodes.Cube.geometry)
     }
   })
 
-  return (
+  if(isMobile) {
+    return (
     <>
-    <mesh
-      receiveShadow
-      castShadow
+    <mesh receiveShadow castShadow
       ref={ref}
       geometry = {gltf.nodes.Cube.geometry}
-      onPointerOver={(event) => setHover(true)}
-      onPointerOut={(event) => setHover(false)}>
+      onPointerDown={e => {
+        e.stopPropagation()
+        setActive(!active)}}>
       <meshPhongMaterial
         attach="material"
-        color={hovered ? '#'+Math.floor(Math.random()*16777215).toString(16): 'orange'}
+        color={active ? '#'+Math.floor(Math.random()*16777215).toString(16): 'orange'}
        />
     </mesh>
     </>
   )
+  } else {
+      return (
+      <>
+      <mesh receiveShadow castShadow
+        ref={ref}
+        geometry = {gltf.nodes.Cube.geometry}
+        onPointerDown={e => {
+          e.stopPropagation()
+          setActive(true)}}
+        onPointerUp={e => setActive(false)}
+        onPointerOver={e => {
+          e.stopPropagation()
+          setHover(true)}}
+        onPointerOut={e => {
+          e.stopPropagation()
+          setHover(false)
+          setActive(false)}}>
+        <meshPhongMaterial
+          attach="material"
+          color={hovered ? '#'+Math.floor(Math.random()*16777215).toString(16): 'orange'}
+         />
+      </mesh>
+      </>
+    )
+  }
+
 }
 
 function Orb(props) {
@@ -149,29 +178,54 @@ function Orb(props) {
      ...props
    }))
   const [hovered, setHover] = useState(false)
+  const [active, setActive] = useState(false)
 
   useFrame(state => {
-    if (hovered === true){
+    if (active === true){
       api.applyForce([0, 10, 0], [-state.mouse.x, -state.mouse.y, 0])
     }
   })
-
-  return (
+  if(isMobile) {
+    return (
     <>
-    <mesh
-      receiveShadow
-      castShadow
+    <mesh receiveShadow castShadow
       ref={ref}
-      geometry = {gltf.nodes.Orb.geometry }
-      onPointerOver={(event) => setHover(true)}
-      onPointerOut={(event) => setHover(false)}>
+      geometry = {gltf.nodes.Orb.geometry}
+      onPointerDown={e => {
+        e.stopPropagation()
+        setActive(!active)}}>
       <meshPhongMaterial
         attach="material"
-        color={hovered ? '#'+Math.floor(Math.random()*16777215).toString(16): 'orange'}
+        color={active ? '#'+Math.floor(Math.random()*16777215).toString(16): 'orange'}
        />
     </mesh>
     </>
   )
+  } else {
+      return (
+      <>
+      <mesh receiveShadow castShadow
+        ref={ref}
+        geometry = {gltf.nodes.Orb.geometry}
+        onPointerDown={e => {
+          e.stopPropagation()
+          setActive(true)}}
+        onPointerUp={e => setActive(false)}
+        onPointerOver={e => {
+          e.stopPropagation()
+          setHover(true)}}
+        onPointerOut={e => {
+          e.stopPropagation()
+          setHover(false)
+          setActive(false)}}>
+        <meshPhongMaterial
+          attach="material"
+          color={hovered ? '#'+Math.floor(Math.random()*16777215).toString(16): 'orange'}
+         />
+      </mesh>
+      </>
+    )
+  }
 }
 
 function Plane(props) {
@@ -193,11 +247,37 @@ export default function App() {
     toggleShow(!show)
   }
   //setTimeout(() => toggle(!show), 1000)
-  return (
+  if (isMobile) {
+    return (
+    <>
+      <div className='nav'>
+      <p>use desktop for more control</p>
+        <div className='button'>
+          <h1 onPointerDown={clearToys} onPointerUp={clearToys}>RESET</h1>
+        </div>
+      </div>
+      <Canvas
+      shadowMap gl={{ alpha: false }}
+      orthographic camera={{ zoom: 50, position: [0, 20, 50]}}>
+        <color attach="background" args={['purple']} />
+        <hemisphereLight intensity={0.3} />
+        <spotLight position={[10, 30, 30]} angle={0.3} penumbra={1} intensity={1} castShadow />
+        <Physics>
+          <Suspense fallback={null}>
+            {show && <Shapes />}
+            {show && <Cube />}
+          </Suspense>
+          <Plane />
+        </Physics>
+      </Canvas>
+      </>
+    )
+  } else {
+    return (
   <>
     <div className='nav'>
       <div className='button'>
-        <h1 onPointerDown={clearToys} onPointerUp={clearToys}>CLEAR</h1>
+        <h1 onPointerDown={clearToys} onPointerUp={clearToys}>RESET</h1>
       </div>
     </div>
     <Canvas
@@ -205,17 +285,18 @@ export default function App() {
     orthographic camera={{ zoom: 50, position: [0, 100, 50]}}>
       <color attach="background" args={['purple']} />
       <CameraControls />
-      <hemisphereLight intensity={0.25} />
-      <spotLight position={[30, 30, 30]} angle={0.3} penumbra={1} intensity={1} castShadow />
+      <hemisphereLight intensity={0.3} />
+      <spotLight position={[10, 30, 30]} angle={0.3} penumbra={1} intensity={1} castShadow />
       <Physics>
-      <Suspense fallback={null}>
-        {show && <Shapes />}
-        <Plane />
-        <Cube />
+        <Suspense fallback={null}>
+          {show && <Shapes />}
+          {show && <Cube />}
         </Suspense>
+        <Plane />
       </Physics>
     </Canvas>
-
     </>
   )
+  }
+
 }
